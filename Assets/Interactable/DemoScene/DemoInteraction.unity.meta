@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9d8ab2800b9dbfd4cb61d062637a290c
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303971
+  packageName: Interaction System - Effortless Integration
+  packageVersion: 1.0
+  assetPath: Assets/Interactable/DemoScene/DemoInteraction.unity
+  uploadId: 720539

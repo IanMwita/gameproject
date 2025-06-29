@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b0fc98cd37bfe7e4dae7377bbc0dece4
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303971
+  packageName: Interaction System - Effortless Integration
+  packageVersion: 1.0
+  assetPath: Assets/Interactable/Scripts/InteractionSpace.asmdef
+  uploadId: 720539
