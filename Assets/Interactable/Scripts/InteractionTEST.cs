@@ -23,16 +23,20 @@ public interface IInteractable
 namespace EJETAGame
 {
     /// <summary>
-    /// An interactable object that displays a UI Canvas and waits for a Yes (Y) or No (N) key press from the player.
+    /// An interactable object that waits for a Yes (Y) or No (N) key press from the player
+    /// and changes the material on a monitor screen when Y is pressed.
     /// </summary>
     public class InteractionTEST : MonoBehaviour, IInteractable
     {
-        [Header("UI References")]
-        [Tooltip("The parent Canvas to show/hide. It should be disabled by default.")]
-        [SerializeField] private Canvas targetCanvas;
+        [Header("Monitor References")]
+        [Tooltip("The renderer component of the monitor screen (usually a plane or quad).")]
+        [SerializeField] private Renderer monitorRenderer;
         
-        [Tooltip("(Optional) A specific panel within the canvas to toggle. If null, only the canvas is toggled.")]
-        [SerializeField] private GameObject questionPanel;
+        [Tooltip("The material to apply to the monitor when Y is pressed.")]
+        [SerializeField] private Material newMaterial;
+        
+        [Tooltip("(Optional) The original material to revert to. Leave null to keep the current material as original.")]
+        [SerializeField] private Material originalMaterial;
 
         // A private flag to control the state of the interaction.
         private bool isWaitingForInput = false;
@@ -41,10 +45,10 @@ namespace EJETAGame
         
         private void Awake()
         {
-            // Ensure the canvas is hidden at the start of the game.
-            if (targetCanvas != null)
+            // Store the original material if not explicitly set
+            if (monitorRenderer != null && originalMaterial == null)
             {
-                targetCanvas.gameObject.SetActive(false);
+                originalMaterial = monitorRenderer.material;
             }
         }
 
@@ -75,15 +79,14 @@ namespace EJETAGame
             // Let the player know they can interact.
             // The actual key ("E", "F", etc.) should be managed by the player/interaction system,
             // not this individual object.
-            InteractionText.instance.SetText("Press [E] to examine"); 
+            InteractionText.instance.SetText(" [E] to Examine"); 
         }
 
         public void Interact()
         {
-            // When the player presses the interact key, show the dialogue.
-            ShowCanvas();
+            // When the player presses the interact key, start waiting for Y/N input.
             isWaitingForInput = true;
-            Debug.Log("Interaction started. Waiting for Y/N input...");
+            Debug.Log("Interaction started. Press Y to change monitor material or N to cancel...");
             
             // Optional: You might want to disable player movement here.
             // e.g., PlayerMovement.instance.CanMove = false;
@@ -91,55 +94,33 @@ namespace EJETAGame
 
         public void OnInteractExit()
         {
-            // If the player walks away, hide the prompt and cancel any pending interaction.
+            // If the player walks away, cancel any pending interaction.
             InteractionText.instance.SetText(""); // Clear the "Press E" prompt.
-            HideCanvas(); // Also hide the main canvas if it was active.
+            isWaitingForInput = false;
             Debug.Log("Player moved out of range. Interaction ended.");
         }
 
         #endregion
 
-        #region UI and Response Logic
-
-        private void ShowCanvas()
-        {
-            if (targetCanvas != null)
-            {
-                targetCanvas.gameObject.SetActive(true);
-            }
-
-            if (questionPanel != null)
-            {
-                questionPanel.SetActive(true);
-            }
-        }
-
-        private void HideCanvas()
-        {
-            if (targetCanvas != null)
-            {
-                targetCanvas.gameObject.SetActive(false);
-            }
-
-            // The question panel is a child of the canvas, so it will be hidden automatically,
-            // but explicitly deactivating it is fine too.
-            if (questionPanel != null)
-            {
-                questionPanel.SetActive(false);
-            }
-            
-            // Crucially, reset the state.
-            isWaitingForInput = false;
-        }
+        #region Material Change Logic
 
         private void OnYesPressed()
         {
-            Debug.Log("Player selected YES.");
+            Debug.Log("Player selected YES. Changing monitor material...");
 
-            // --- ADD YOUR 'YES' LOGIC HERE ---
-            // Example: Add item to inventory, start a quest, open a door...
+            // Change the monitor material
+            if (monitorRenderer != null && newMaterial != null)
+            {
+                monitorRenderer.material = newMaterial;
+                Debug.Log("Monitor material changed successfully.");
+            }
+            else
+            {
+                Debug.LogWarning("Monitor renderer or new material is not assigned!");
+            }
 
-            HideCanvas();
+            // Reset the interaction state
+            isWaitingForInput = false;
             
             // Optional: Re-enable player movement.
             // e.g., PlayerMovement.instance.CanMove = true;
@@ -147,15 +128,38 @@ namespace EJETAGame
 
         private void OnNoPressed()
         {
-            Debug.Log("Player selected NO.");
+            Debug.Log("Player selected NO. Keeping original monitor material.");
 
-            // --- ADD YOUR 'NO' LOGIC HERE ---
-            // Example: Player character says "Maybe later."
-
-            HideCanvas();
+            // Reset the interaction state without changing anything
+            isWaitingForInput = false;
             
             // Optional: Re-enable player movement.
             // e.g., PlayerMovement.instance.CanMove = true;
+        }
+
+        #endregion
+
+        #region Public Utility Methods
+
+        /// <summary>
+        /// Manually revert the monitor to its original material.
+        /// </summary>
+        public void RevertToOriginalMaterial()
+        {
+            if (monitorRenderer != null && originalMaterial != null)
+            {
+                monitorRenderer.material = originalMaterial;
+                Debug.Log("Monitor reverted to original material.");
+            }
+        }
+
+        /// <summary>
+        /// Check if the monitor currently has the new material applied.
+        /// </summary>
+        public bool HasNewMaterial()
+        {
+            return monitorRenderer != null && newMaterial != null && 
+                   monitorRenderer.material == newMaterial;
         }
 
         #endregion
